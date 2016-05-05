@@ -1,6 +1,6 @@
 let angular = require('angular');
 
-angular.module('TestApp', [])
+angular.module('TestApp', ['functional-scope'])
   .directive('testDirective', function() {
     return {
       controller: function($scope) {
