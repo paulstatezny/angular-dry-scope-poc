@@ -1,3 +1,4 @@
+require('angular-functional-scope');
 let angular = require('angular');
 
 angular.module('TestApp', ['functional-scope'])
