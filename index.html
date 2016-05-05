@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script type="text/javascript" src="bundle.js"></script>
+  </head>
+
+  <body>
+    <div ng-app="TestApp">
+      <div test-directive>
+        <p>Number is {{number}}</p>
+        <p>Number is greater than 5: {{greaterThan5 ? 'true' : 'false'}}</p>
+        <button ng-click="pickNumber()">Pick a Number</button>
+      </div>
+    </div>
+  </body>
+</html>
