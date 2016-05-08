@@ -1,35 +1,48 @@
 let angular = require('angular');
 
 function rootScopeFunctionalDecorator($delegate) {
-  $delegate.$$definitions = {};
+  var prototype = Object.getPrototypeOf($delegate);
+  var $new = prototype.$new;
 
-  function $define(property, definition) {
-    this.$$definitions[property] = definition;
+  prototype.$new = function() {
+    var scope = $new.apply(this, arguments);
+
+    // Perform $update when after ancestor scopes call $update
+    scope.$on('$update', scope.$update.bind(scope, null));
+
+    return scope;
   };
 
-  function $update(changes) {
-    for (var key in changes) {
+  prototype.$define = function(property, definition) {
+    if (!this.$$definitions) {
+      this.$$definitions = {};
+    }
+
+    this.$$definitions[property] = definition.bind(this);
+  };
+
+  prototype.$update = function(changes, event) {
+    // Avoid infinite loop since the event cycle starts at the scope on which $broadcast was called
+    if (event && event.targetScope === this) {
+      return;
+    }
+
+    // Apply changeset
+    for (var key in (changes || {})) {
       this[key] = changes[key];
     }
-    for (var key in this.$$definitions) {
+
+    // Re-run definitions and update scope only if they yield new values
+    for (var key in (this.$$definitions || {})) {
       var result = this.$$definitions[key]();
       if (this[key] !== result) {
         this[key] = result;
       }
     }
+
+    // Notify child scopes to run update
+    this.$broadcast('$update');
   };
-
-  $delegate.$define = $define;
-  $delegate.$update = $update;
-
-  var ScopeConstructor = $delegate.constructor;
-
-  $delegate.constructor = function() {
-    var newScope = ScopeConstructor.apply(this, arguments);
-    newScope.$$definitions = {};
-    newScope.$define = $define.bind(newScope);
-    newScope.$update = $update.bind(newScope);
-  }
 
   return $delegate;
 }
@@ -67,26 +80,26 @@ angular.module('TestApp', ['functional-scope'])
   })
   .directive('innerNumberPicker', function() {
     return {
+      scope: {},
       controller: function($scope) {
-        $scope.innerNumber = 0;
+        $scope.number = 0;
 
-        $scope.pickInnerNumber = function() {
+        $scope.pickNumber = function() {
           $scope.$update({
-            innerNumber: getRandomIntUpTo(10)
+            number: getRandomIntUpTo(10)
           });
         };
 
         $scope.$define('sum', function() {
-          debugger;
-          return $scope.number + $scope.innerNumber;
+          return $scope.number + $scope.$parent.number;
         });
       },
       template: `
         <div style="border: 2px solid red; margin: 10px;">
           <h2>Inner Number Picker</h2>
-          <p>Number is: {{innerNumber}}</p>
+          <p>Number is: {{number}}</p>
           <p>Sum is: {{sum}}</p>
-          <button ng-click="pickInnerNumber()">Pick an Inner Number</button>
+          <button ng-click="pickNumber()">Pick an Inner Number</button>
         </div>
       `
     };
