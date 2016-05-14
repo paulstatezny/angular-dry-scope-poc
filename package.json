@@ -11,11 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "angular": "^1.5.5",
-    "angular-functional-scope": "git://github.com/paulstatezny/angular-functional-scope.git"
+    "angular-dry-scope": "1.0.0"
   },
   "devDependencies": {
     "babel-core": "^6.0.0",
     "babel-loader": "^6.2.4",
+    "html-loader": "^0.4.3",
     "webpack": "^1.13.0"
   }
 }

@@ -1,11 +1,11 @@
 let angular = require('angular');
-require('angular-functional-scope');
+require('angular-dry-scope');
 
 function getRandomIntUpTo(max) {
   return Math.floor(Math.random() * max);
 }
 
-angular.module('TestApp', ['functional-scope'])
+angular.module('TestApp', ['dry-scope'])
   .directive('numberPicker', function() {
     return {
       controller: function($scope) {
